@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+
+from sys import argv, stdin, stdout, exit
+from urllib.parse import urlparse, parse_qs
+
+try:
+    from termcolor import colored
+except ImportError:
+    exit("Install termcolor to continue.")
+
+if __name__ == "__main__":
+
+    if stdin.isatty():
+        exit(colored("USAGE: ", "red") + colored(f"echo <url> | {argv[0]}", "green"))
+    
+    if len(argv) > 1 and (argv[1] == "-b" or argv[1] == "--banner"):
+        print("")
+        print("-----------------------------------------------------------------")
+        print("|                                                               |")
+        print("|    Prettify: Highlight every GET params from a big fat URL    |")
+        print("|                Coded By: Nehal Zaman (n3hal_)                 |")
+        print("|                                                               |")
+        print("-----------------------------------------------------------------")
+        print("")
+
+    for url in stdin:
+        splitUrl = urlparse(url)
+        parsedUrl = ""
+        
+        if splitUrl.scheme:
+            parsedUrl += colored(splitUrl.scheme, "red") + colored("://", "white")
+
+        if splitUrl.netloc:
+            parsedUrl += colored(splitUrl.netloc, "blue", attrs=["bold"])
+
+        if splitUrl.path:
+            parsedUrl += colored(splitUrl.path, "yellow")
+
+        if splitUrl.params:
+            parsedUrl += colored(splitUrl.params, "red")
+
+        if splitUrl.query:
+            parsedUrl += colored("?", "white")
+            parsedquery = []
+            params = parse_qs(splitUrl.query)
+            for k in params.keys():
+                parsedquery.append(colored(k, "white", "on_red", attrs=["bold"]) + colored("=", "white") + colored(",".join(params[k]), "white", "on_magenta", attrs=["bold"]))
+            parsedUrl += "&".join(parsedquery)
+
+        if splitUrl.fragment:
+            parsedUrl += colored("#", "white") + colored(splitUrl.fragment, "cyan")
+
+        stdout.write(parsedUrl + "\n")
